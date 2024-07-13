@@ -71,6 +71,8 @@ const m_fInReload = 54;
 const m_pActiveItem = 373;
 const m_rgpPlayerItems_iWeaponBox = 34;
 
+new item_id;
+
 /* ~ [ Global Parameters ] ~ */
 new HamHook: gl_HamHook_TraceAttack[4],
 
@@ -128,7 +130,7 @@ public plugin_init()
     fm_ham_hook(false);
 
     // Commands
-    register_clcmd("say /cwt", "Command_GiveWeapon");
+    item_id = zs_register_item("itemname", 3500); //item name and item cost
 }
 
 public plugin_precache()
@@ -159,6 +161,12 @@ public Command_HookWeapon(iPlayer)
 {
     engclient_cmd(iPlayer, WEAPON_REFERENCE);
     return PLUGIN_HANDLED;
+}
+
+public zs_item_selected(id, item){
+	if(item_id == item){
+		Command_GiveWeapon(id);
+	}
 }
 
 public Command_GiveWeapon(iPlayer)
