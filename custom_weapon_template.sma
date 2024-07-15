@@ -1,6 +1,7 @@
 #include <amxmodx>
 #include <fakemeta_util>
 #include <hamsandwich>
+#include <zombieswarm>
 
 /* ~ [ Weapon Resources ] ~ */
 new const WEAPON_MODEL_VIEW[] = "models/x.mdl";
