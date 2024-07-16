@@ -1,1 +1,1 @@
-### extra item template for zs
+### extra weapon template for zs
