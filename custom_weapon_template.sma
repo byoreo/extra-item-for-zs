@@ -9,7 +9,17 @@ new const WEAPON_MODEL_PLAYER[] = "models/x.mdl";
 new const WEAPON_MODEL_WORLD[] = "models/x.mdl";
 new const WEAPON_SHOOT_SOUND[] = "weapons/x.wav";
 
+new const WEAPON_RELOAD_SOUND[][] = {
+	"weapons/x_clipin.wav",
+	"weapons/x_clipout.wav",
+	"weapons/x_draw.wav"
+	
+	// Add a lot and the like.
+}
+
 new const WEAPON_REFERENCE[] = "weapon_x";
+new const WEAPON_WEAPONLIST[] = "weapon_x";
+
 const WEAPON_SPECIAL_CODE = x;
 
 new
@@ -79,8 +89,6 @@ new const iWeapon_List[][] =
 	{7, 100, -1, -1, 0, 8, 30, 0} // P90
 };
 
-new const WEAPON_WEAPONLIST[] = "weapon_x";
-
 // Some data for the List of Weapons
 // https://wiki.alliedmods.net/CS_WeaponList_Message_Dump
  
@@ -125,7 +133,7 @@ new HamHook: gl_HamHook_TraceAttack[4],
 /* ~ [ AMX Mod X ] ~ */
 public plugin_init()
 {
-    register_plugin("[ZS] Extra: Weapon", "2.1", "Cristian505");
+    register_plugin("[ZS] Extra: Weapon", "2.1", "ByOreo & --chcode");
     
     // Fakemeta
     register_forward(FM_UpdateClientData,    "FM_Hook_UpdateClientData_Post",      true);
@@ -189,7 +197,11 @@ public plugin_precache()
 
     // Precache Sounds
     engfunc(EngFunc_PrecacheSound, WEAPON_SHOOT_SOUND);
-
+	
+	for(new = 0; i < sizeof(WEAPON_RELOAD_SOUND); i++) {
+		engfunc(EngFunc_PrecacheSound, WEAPON_RELOAD_SOUND[i]);
+	}
+	
     // Precache generic
     new szWeaponList[128]; formatex(szWeaponList, charsmax(szWeaponList), "sprites/%s.txt", WEAPON_WEAPONLIST);
     engfunc(EngFunc_PrecacheGeneric, szWeaponList);
