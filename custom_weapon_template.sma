@@ -7,18 +7,17 @@
 new const WEAPON_MODEL_VIEW[] = "models/x.mdl";
 new const WEAPON_MODEL_PLAYER[] = "models/x.mdl";
 new const WEAPON_MODEL_WORLD[] = "models/x.mdl";
+new const WEAPON_SHOOT_SOUND[] = "weapons/x.wav";
 
 new const WEAPON_REFERENCE[] = "weapon_x";
 const WEAPON_SPECIAL_CODE = x;
 
-const WEAPON_BPAMMO = x;
-const WEAPON_AMMO = x;
-
-/* ~ [ Weapon Primary Attack ] ~ */
-new const WEAPON_SHOOT_SOUND[] = "weapons/x.wav";
-const Float: WEAPON_SHOOT_RATE = x.x;
-const Float: WEAPON_SHOOT_PUNCHANGLE = x.x;
-const Float: WEAPON_SHOOT_DAMAGE = x.x;
+new
+	cvar_weapon_bpammo,
+	cvar_weapon_ammo,
+	cvar_weapon_speed,
+	cvar_weapon_recoil,
+	cvar_weapon_damage;
 
 /* ~ [ Weapon Muzzleflash ] ~ */
 #define CUSTOM_MUZZLEFLASH_ENABLED
@@ -45,8 +44,44 @@ enum _: iWeaponAnims
 }
 
 /* ~ [ Weapon List ] ~ */
+new const iWeapon_List[][] = 
+{
+	{0},
+	{9, 52, -1, -1, 1, 3, 1, 0}, // P228
+	{0},
+	{2, 9, -1  -1, 0, 9, 3, 0}, // SCOUT
+	{12, 1, -1, -1, 3, 1, 4, 24}, // HEGRENADE
+	{5, 32, -1, -1, 0, 12, 5, 0}, // XM1014
+	{14, 1, -1, -1, 4, 3, 6, 24}, // C4
+	{6, 100, -1, -1, 0, 13, 7, 0}, // MAC10
+	{4, 90, -1, -1, 0, 14, 8, 0}, // AUG
+	{13, 1, -1, -1, 3, 3, 9, 24}, // SMOKEGRENADE
+	{10, 120, -1, -1, 1, 5, 10, 0}, // ELITE
+	{7, 100, -1, -1, 1, 6, 11, 0}, // FIVESEVEN
+	{6, 100, -1, -1, 0, 15, 12, 0}, // UMP45
+	{4, 90, -1, -1, 0, 16, 13, 0}, // SG550
+	{4, 90, -1, -1, 0, 17, 14, 0}, // GALIL
+	{4, 90, -1, -1, 0, 18, 15, 0}, // FAMAS
+	{6, 100, -1, -1, 1, 4, 16, 0}, // USP
+	{10, 120, -1, -1, 1, 2, 17, 0}, // GLOCK18
+	{1, 30, -1, -1, 0, 2, 18, 0}, // AWP
+	{10, 120, -1, -1, 0, 7, 19, 0}, // MP5NAVY
+	{3, 200, -1, -1, 0, 4, 20, 0}, // M249
+	{5, 32, -1, -1, 0, 5, 21, 0}, // M3
+	{4, 90, -1, -1, 0, 6, 22, 0}, // M4A1
+	{10, 120, -1, -1, 0, 11, 23, 0}, // TMP
+	{2, 90, -1, -1, 0, 3, 24, 0}, // G3SG1
+	{11, 2, -1, -1, 3, 2, 25, 24}, // FLASHBANG
+	{8, 35, -1, -1, 1, 1, 26, 0}, // DEAGLE
+	{4, 90, -1, -1, 0, 10, 27, 0}, // SG552
+	{2, 90, -1, -1, 0, 1, 28, 0}, // AK47
+	{-1, -1, -1, -1, 2, 1, 29, 0}, // KNIFE
+	{7, 100, -1, -1, 0, 8, 30, 0} // P90
+};
+
 new const WEAPON_WEAPONLIST[] = "weapon_x";
-new const iWeaponList[] = { x, x, x, x, x, x, x, x };
+
+// Some data for the List of Weapons
 // https://wiki.alliedmods.net/CS_WeaponList_Message_Dump
  
 /* ~ [ Conditions ] ~ */
@@ -90,9 +125,8 @@ new HamHook: gl_HamHook_TraceAttack[4],
 /* ~ [ AMX Mod X ] ~ */
 public plugin_init()
 {
-    register_plugin("Custom Weapon Template", "2.1", "Cristian505 \ Batcoh: Code Base");
-    // Created & tested in AMX Mod X 1.9.0 on 11/4/2023.
-
+    register_plugin("[ZS] Extra: Weapon", "2.1", "Cristian505");
+    
     // Fakemeta
     register_forward(FM_UpdateClientData,    "FM_Hook_UpdateClientData_Post",      true);
     register_forward(FM_SetModel,            "FM_Hook_SetModel_Pre",              false);
@@ -130,8 +164,15 @@ public plugin_init()
     // Ham Hook
     fm_ham_hook(false);
 
-    // Commands
-    item_id = zs_register_item("itemname", 3500); //item name and item cost
+    // Item Register
+    item_id = zs_register_item("Item", 250); //item name and item cost
+    
+    // Cvars
+    cvar_weapon_bpammo = 	register_cvar("zs_x_ammo", "120");
+    cvar_weapon_ammo = 	register_cvar("zs_x_clip", "30");
+    cvar_weapon_damage = 	register_cvar("zs_x_damage", "1.00");
+    cvar_weapon_recoil = 	register_cvar("zs_x_recoil", "0.50");
+    cvar_weapon_speed = 	register_cvar("zs_x_speed", "0.115");
 }
 
 public plugin_precache()
@@ -177,7 +218,7 @@ public Command_GiveWeapon(iPlayer)
 
     set_pev(iWeapon, pev_impulse, WEAPON_SPECIAL_CODE);
     ExecuteHam(Ham_Spawn, iWeapon);
-    set_pdata_int(iWeapon, m_iClip, WEAPON_AMMO, linux_diff_weapon);
+    set_pdata_int(iWeapon, m_iClip, get_pcvar_num(cvar_weapon_ammo), linux_diff_weapon);
     UTIL_DropWeapon(iPlayer, ExecuteHamB(Ham_Item_ItemSlot, iWeapon));
 
     if(!ExecuteHamB(Ham_AddPlayerItem, iPlayer, iWeapon))
@@ -191,7 +232,7 @@ public Command_GiveWeapon(iPlayer)
 
     static iAmmoType; iAmmoType = m_rgAmmo + get_pdata_int(iWeapon, m_iPrimaryAmmoType, linux_diff_weapon);
 
-    set_pdata_int(iPlayer, iAmmoType, WEAPON_BPAMMO, linux_diff_player);
+    set_pdata_int(iPlayer, iAmmoType, get_pcvar_num(cvar_weapon_bpammo), linux_diff_player);
 
     emit_sound(iPlayer, CHAN_ITEM, "items/gunpickup2.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
     return 1;
@@ -240,9 +281,9 @@ public CWeapon__PrimaryAttack_Pre(iWeapon)
 
     static Float: vecPunchangle[3];
     pev(iPlayer, pev_punchangle, vecPunchangle);
-    vecPunchangle[0] *= WEAPON_SHOOT_PUNCHANGLE
-    vecPunchangle[1] *= WEAPON_SHOOT_PUNCHANGLE
-    vecPunchangle[2] *= WEAPON_SHOOT_PUNCHANGLE
+    vecPunchangle[0] *= get_pcvar_float(cvar_weapon_recoil)
+    vecPunchangle[1] *= get_pcvar_float(cvar_weapon_recoil)
+    vecPunchangle[2] *= get_pcvar_float(cvar_weapon_recoil)
     set_pev(iPlayer, pev_punchangle, vecPunchangle);
 
     UTIL_SendWeaponAnim(iPlayer, WEAPON_ANIM_SHOOT);
@@ -253,10 +294,10 @@ public CWeapon__PrimaryAttack_Pre(iWeapon)
 
     emit_sound(iPlayer, CHAN_WEAPON, WEAPON_SHOOT_SOUND, VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
-    set_pdata_float(iPlayer, m_flNextAttack, WEAPON_SHOOT_RATE, linux_diff_player);
+    set_pdata_float(iPlayer, m_flNextAttack, get_pcvar_float(cvar_weapon_speed), linux_diff_player);
     set_pdata_float(iWeapon, m_flTimeWeaponIdle, WEAPON_ANIM_SHOOT_TIME, linux_diff_weapon);
-    set_pdata_float(iWeapon, m_flNextPrimaryAttack, WEAPON_SHOOT_RATE, linux_diff_weapon);
-    set_pdata_float(iWeapon, m_flNextSecondaryAttack, WEAPON_SHOOT_RATE, linux_diff_weapon);
+    set_pdata_float(iWeapon, m_flNextPrimaryAttack, get_pcvar_float(cvar_weapon_speed), linux_diff_weapon);
+    set_pdata_float(iWeapon, m_flNextSecondaryAttack, get_pcvar_float(cvar_weapon_speed), linux_diff_weapon);
 
     return HAM_SUPERCEDE;
 }
@@ -266,7 +307,7 @@ public CWeapon__Reload_Pre(iWeapon)
     if(!IsPdataSafe(iWeapon) || !IsCustomWeapon(iWeapon)) return HAM_IGNORED;
 
     static iAmmo; iAmmo = get_pdata_int(iWeapon, m_iClip, linux_diff_weapon);
-    if(iAmmo >= WEAPON_AMMO) return HAM_SUPERCEDE;
+    if(iAmmo >= get_pcvar_num(cvar_weapon_ammo)) return HAM_SUPERCEDE;
 
     static iPlayer; iPlayer = get_pdata_cbase(iWeapon, m_pPlayer, linux_diff_weapon);
     static iAmmoType; iAmmoType = m_rgAmmo + get_pdata_int(iWeapon, m_iPrimaryAmmoType, linux_diff_weapon);
@@ -298,7 +339,7 @@ public CWeapon__PostFrame_Pre(iWeapon)
         static iAmmoType; iAmmoType = m_rgAmmo + get_pdata_int(iWeapon, m_iPrimaryAmmoType, linux_diff_weapon);
         static iPlayer; iPlayer = get_pdata_cbase(iWeapon, m_pPlayer, linux_diff_weapon);
         static iAmmo; iAmmo = get_pdata_int(iPlayer, iAmmoType, linux_diff_player);
-        static j; j = min(WEAPON_AMMO - iClip, iAmmo);
+        static j; j = min(get_pcvar_num(cvar_weapon_ammo) - iClip, iAmmo);
         
         set_pdata_int(iWeapon, m_iClip, iClip + j, linux_diff_weapon);
         set_pdata_int(iPlayer, iAmmoType, iAmmo - j, linux_diff_player);
@@ -334,7 +375,7 @@ public CEntity__TraceAttack_Pre(iVictim, iAttacker, Float: flDamage)
     static iWeapon; iWeapon = get_pdata_cbase(iAttacker, 373, 5);
     if(!IsPdataSafe(iWeapon) || !IsCustomWeapon(iWeapon)) return;
 
-    flDamage *= WEAPON_SHOOT_DAMAGE
+    flDamage *= get_pcvar_float(cvar_weapon_damage);
     SetHamParamFloat(3, flDamage);
 }
 
@@ -521,10 +562,15 @@ stock UTIL_CreateMuzzleFlash(iPlayer, const szMuzzleSprite[], Float: flScale, Fl
 
 stock UTIL_WeaponList(const iPlayer, bool: bEnabled)
 {
+	new iWeaponList[8];
+	for(new i = 0; i < 8; i++) {
+		iWeaponList[i] = iWeapon_List[get_weaponid(WEAPON_REFERENCE)][i];
+	}
+	
     message_begin(MSG_ONE, gl_iMsgID_Weaponlist, _, iPlayer);
     write_string(bEnabled ? WEAPON_WEAPONLIST : WEAPON_REFERENCE);
     write_byte(iWeaponList[0]);
-    write_byte(bEnabled ? WEAPON_AMMO : iWeaponList[1]);
+    write_byte(bEnabled ? get_pcvar_num(cvar_weapon_ammo) : iWeaponList[1]);
     write_byte(iWeaponList[2]);
     write_byte(iWeaponList[3]);
     write_byte(iWeaponList[4]);
