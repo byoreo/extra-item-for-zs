@@ -3,13 +3,23 @@
 #include <hamsandwich>
 #include <zombieswarm>
 
+// ===============================================================
+// Your Const configration and edit place
+// ===============================================================
+
+/* ~ [ MuzzleFlash Enable ] ~ */
+/* ~ [ If you don't want to use it, add // to the beginning of #define ] ~ */
+
+#define CUSTOM_MUZZLEFLASH_ENABLED
+
 /* ~ [ Weapon Resources ] ~ */
 new const WEAPON_MODEL_VIEW[] = "models/x.mdl";
 new const WEAPON_MODEL_PLAYER[] = "models/x.mdl";
 new const WEAPON_MODEL_WORLD[] = "models/x.mdl";
 new const WEAPON_SHOOT_SOUND[] = "weapons/x.wav";
 
-new const WEAPON_RELOAD_SOUND[][] = {
+// To download model sounds directly from the plugin.
+new const WEAPON_EXTERNAL_SOUNDS[][] = {
 	"weapons/x_clipin.wav",
 	"weapons/x_clipout.wav",
 	"weapons/x_draw.wav"
@@ -20,24 +30,8 @@ new const WEAPON_RELOAD_SOUND[][] = {
 new const WEAPON_REFERENCE[] = "weapon_x";
 new const WEAPON_WEAPONLIST[] = "weapon_x";
 
-const WEAPON_SPECIAL_CODE = x;
-
-new
-	cvar_weapon_bpammo,
-	cvar_weapon_ammo,
-	cvar_weapon_speed,
-	cvar_weapon_recoil,
-	cvar_weapon_damage;
-
-/* ~ [ Weapon Muzzleflash ] ~ */
-#define CUSTOM_MUZZLEFLASH_ENABLED
-
-#if defined CUSTOM_MUZZLEFLASH_ENABLED
-new const ENTITY_MUZZLE_CLASSNAME[] = "x";
-new const ENTITY_MUZZLE_SPRITE[] = "sprites/x.spr";
-
-const Float: ENTITY_MUZZLE_NEXTTHINK = x.x;
-#endif
+const WEAPON_SPID = 1;
+const WEAPON_SPECIAL_CODE = 313131 + WEAPON_SPID;
 
 /* ~ [ Animations Settings ] ~ */
 const Float: WEAPON_ANIM_IDLE_TIME = x.x;
@@ -52,6 +46,24 @@ enum _: iWeaponAnims
 	WEAPON_ANIM_DRAW,
 	WEAPON_ANIM_SHOOT
 }
+
+/* ~ [ Weapon Muzzleflash ] ~ */
+#if defined CUSTOM_MUZZLEFLASH_ENABLED
+new const ENTITY_MUZZLE_CLASSNAME[] = "x";
+new const ENTITY_MUZZLE_SPRITE[] = "sprites/x.spr";
+const Float: ENTITY_MUZZLE_NEXTTHINK = x.x;
+#endif
+
+// ===============================================================
+// Const configration end's
+// ===============================================================
+
+new
+	cvar_weapon_bpammo,
+	cvar_weapon_ammo,
+	cvar_weapon_speed,
+	cvar_weapon_recoil,
+	cvar_weapon_damage;
 
 /* ~ [ Weapon List ] ~ */
 new const iWeapon_List[][] = 
@@ -198,8 +210,8 @@ public plugin_precache()
     // Precache Sounds
     engfunc(EngFunc_PrecacheSound, WEAPON_SHOOT_SOUND);
 	
-	for(new = 0; i < sizeof(WEAPON_RELOAD_SOUND); i++) {
-		engfunc(EngFunc_PrecacheSound, WEAPON_RELOAD_SOUND[i]);
+	for(new = 0; i < sizeof(WEAPON_EXTERNAL_SOUNDS); i++) {
+		engfunc(EngFunc_PrecacheSound, WEAPON_EXTERNAL_SOUNDS[i]);
 	}
 	
     // Precache generic
