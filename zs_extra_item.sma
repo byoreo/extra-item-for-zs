@@ -210,7 +210,7 @@ public plugin_precache()
     // Precache Sounds
     engfunc(EngFunc_PrecacheSound, WEAPON_SHOOT_SOUND);
 	
-	for(new = 0; i < sizeof(WEAPON_EXTERNAL_SOUNDS); i++) {
+	for(new i = 0; i < sizeof(WEAPON_EXTERNAL_SOUNDS); i++) {
 		engfunc(EngFunc_PrecacheSound, WEAPON_EXTERNAL_SOUNDS[i]);
 	}
 	
